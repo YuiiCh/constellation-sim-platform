@@ -1,0 +1,27 @@
+{
+  "name": "constellation-sim-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4173",
+    "test:e2e": "playwright test",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "cesium": "^1.118.0",
+    "echarts": "^5.5.1",
+    "pinia": "^2.2.2",
+    "vue": "^3.4.38"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.47.0",
+    "@vitejs/plugin-vue": "^5.1.3",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.3",
+    "vite-plugin-cesium": "^1.2.23",
+    "vue-tsc": "^2.1.6"
+  }
+}

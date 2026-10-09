@@ -1,0 +1,13 @@
+node_modules/
+backend/venv/
+frontend/dist/
+data/
+__pycache__/
+*.pyc
+*.db
+*.sqlite
+.env
+.playwright/
+test-results/
+playwright-report/
+.DS_Store
