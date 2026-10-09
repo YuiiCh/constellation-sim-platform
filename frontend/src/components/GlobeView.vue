@@ -106,11 +106,17 @@ function buildRegionBox() {
 }
 
 function initWorker() {
-  worker = new Worker(new URL('../workers/orbit.worker.ts', import.meta.url), { type: 'module' })
-  worker.onmessage = (ev: MessageEvent) => {
-    const msg = ev.data
-    if (msg.type === 'positions') updateSatellitePositions(msg.positions)
-    else if (msg.type === 'orbit') updateOrbit(msg.norad_id, msg.points)
+  try {
+    worker = new Worker(new URL('../workers/orbit.worker.ts', import.meta.url), { type: 'module' })
+    worker.onmessage = (ev: MessageEvent) => {
+      const msg = ev.data
+      if (msg.type === 'positions') updateSatellitePositions(msg.positions)
+      else if (msg.type === 'orbit') updateOrbit(msg.norad_id, msg.points)
+    }
+    worker.onerror = (e) => console.warn('轨道 Worker 错误（已降级）', e.message)
+  } catch (e) {
+    console.warn('Web Worker 初始化失败，卫星位置更新降级', e)
+    worker = undefined as any
   }
 }
 
@@ -134,6 +140,7 @@ function buildSatellitePoints() {
 }
 
 function postPositions() {
+  if (!worker) return
   worker.postMessage({ type: 'positions', timeUnix: store.currentTimeUnix })
   lastPost = performance.now()
 }
@@ -163,7 +170,7 @@ function onPick(pos: Cesium.Cartesian2) {
 
 // ---- 轨道线 ----
 function requestOrbits() {
-  if (!store.showOrbits) return
+  if (!store.showOrbits || !worker) return
   for (const id of store.highlighted) {
     worker.postMessage({ type: 'orbit', norad_id: id, timeUnix: store.currentTimeUnix })
   }
@@ -338,5 +345,10 @@ defineExpose({ requestOrbits, postPositions })
   inset: 0;
   width: 100%;
   height: 100%;
+}
+
+/* 隐藏 Cesium 错误面板，避免在无 GPU 环境下拦截交互 */
+:deep(.cesium-widget-errorPanel) {
+  display: none !important;
 }
 </style>

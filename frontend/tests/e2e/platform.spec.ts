@@ -40,9 +40,11 @@ test.describe('星座仿真平台 端到端', () => {
     await expect(page.locator('.header .title')).toBeVisible()
     // Cesium canvas 存在
     await expect(page.locator('canvas').first()).toBeVisible({ timeout: 30000 })
-    // 星座下拉存在且有选项
+    // 星座下拉存在且有选项（选项异步从 /api/constellations 加载）
+    const sel = page.locator('.cons-select')
+    await expect(sel).toBeVisible()
     const opts = page.locator('.cons-select option')
-    await expect(opts.first()).toBeVisible()
+    await page.waitForSelector('.cons-select option', { state: 'attached', timeout: 20000 })
     expect(await opts.count()).toBeGreaterThan(0)
   })
 

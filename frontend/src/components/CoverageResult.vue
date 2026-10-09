@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, computed, nextTick } from 'vue'
 import * as echarts from 'echarts'
 import { useStore } from '@/store'
 
@@ -75,14 +75,31 @@ function renderChart() {
   })
 }
 
-onMounted(() => {
-  if (chartEl.value) {
-    chart = echarts.init(chartEl.value)
-    renderChart()
-  }
-})
+function initChart() {
+  if (chart || !chartEl.value) return
+  chart = echarts.init(chartEl.value)
+}
+
+async function ensureChart() {
+  await nextTick()
+  initChart()
+  renderChart()
+}
+
+onMounted(ensureChart)
 onBeforeUnmount(() => chart?.dispose())
-watch(() => store.summary, renderChart, { deep: false })
+watch(
+  () => store.summary,
+  async (s) => {
+    if (!s) {
+      chart?.dispose()
+      chart = null
+      return
+    }
+    await ensureChart()
+  },
+  { deep: false },
+)
 watch(() => store.frameIndex, renderChart)
 
 function closeDetail() {
